@@ -5,8 +5,6 @@
 #include <string.h>
 #include <time.h>
 
-#define firstChip 100
-
 typedef struct {
 	char mark[128];
 	int number;
@@ -18,7 +16,6 @@ typedef struct {
 	int score;
 	Card hand[20];
 	int count;
-	int chip;
 } Player;
 
 void printScore(Player p) {
@@ -38,21 +35,21 @@ void printMask(Player p) {
 
 int isJudge(int a, int b) {
 	if ( a == 21 && b != 21)
-		return 1;
-	else if ( a != 21 && b == 21 )
-		return 2;
-	else if ( a == b )
-		return 0;
-	else if ( a > 21 && b > 21 )
-		return 0;
-	else if ( a > 21 && b < 21 )
-		return 2;
-	else if ( a < 21 && b > 21 )
-		return 1;
-	else if ( a > b )
-		return 1;
-	else
-		return 2;
+			return 1;
+		else if ( a != 21 && b == 21 )
+			return 2;
+		else if ( a == b )
+			return 0;
+		else if ( a > 21 && b > 21 )
+			return 0;
+		else if ( a > 21 && b < 21 )
+			return 2;
+		else if ( a < 21 && b > 21 )
+			return 1;
+		else if ( a > b )
+			return 1;
+		else if ( a < b )
+			return 2;
 }
 
 void shuffle (Card c[], int n) {
@@ -76,16 +73,6 @@ void Drew(Player *p, Card *d,int *deck_size,int *top) {
 	(*deck_size)--;
 }
 
-void printChip(Player p, int bet, int save) {
-	if ( p.chip > save  ) {
-		printf("□%-6sの現在のチップ%3d ( 増減 +%3d )\n",p.name,p.chip,bet);
-	} else if ( p.chip < save ) {
-		printf("□%-6sの現在のチップ%3d ( 増減 %3d )\n",p.name,p.chip,-bet);
-	} else {
-		printf("□%-6sの現在のチップ%3d ( 増減   ±0 )\n",p.name,p.chip);
-	}
-}
-
 void animation() {
 	putchar('\n');
 	for (int i = 0; i < 10; i++) {
@@ -93,39 +80,26 @@ void animation() {
 	}
 	putchar('\n');
 }
-void animationBJ() {
-	putchar('\n');
-	for (int i = 0; i < 4; i++) {
-		printf("ミ☆"); fflush(0); Sleep(100);
-	}
-	putchar('\n');
-}
 
 int main(void) {
 
-	Player player1;
-	strcpy(player1.name, "Computer");
-	player1.chip = firstChip;
-
-	Player player2;
-	strcpy(player2.name, "Human");
-	player2.chip = firstChip;
-
 	while(1) {
 
+	Player player1;
+	strcpy(player1.name, "Computer");
 	player1.score = 0;
 	player1.count = 0;
 
+	Player player2;
+	strcpy(player2.name, "Human");
 	player2.score = 0;
 	player2.count = 0;
-	int saveChip = player2.chip;
 
 	Card deck[52];
 
 	int deck_size = 52;
 	int retry;
 	int top = 0;
-	int bet;
 
 	for (int i = 0; i < 13; i++) {
 
@@ -175,19 +149,14 @@ int main(void) {
 	printMask(player1);
 
 	//PLのドロー
+
 	for (int i = 0; i < 2; i++) {
 		Drew(&player2,deck,&deck_size,&top);
 	}
 	printScore(player2);
 
-	printf("□%-6sの手持ちチップ枚数 : %d\n", player2.name,player2.chip);
-	printf("□賭けるチップを入力してください : "); fflush(0); scanf("%d", &bet);
-	while ( player2.chip < bet) {
-		puts("枚数を入力しなおしてください。");
-		printf("□賭けるチップを入力してください : "); fflush(0); scanf("%d", &bet);
-	}
-
 	printf("□カードを引きますか？ [Y...1 / N...0]"); fflush(0); scanf("%d", &retry);
+
 	putchar('\n');
 
 	//PLのターン
@@ -227,32 +196,12 @@ int main(void) {
 	printScore(player1);
 	printScore(player2);
 
-	if (player2.score == 21) {
-		animationBJ();
-		printf("□%-8s BLACKJACK!!\n",player2.name);
-	}
-
 	if (isJudge(player1.score,player2.score) == 1) {
 		printf("□%-8s WIN!!! \n",player1.name);
 	} else if (isJudge(player1.score,player2.score) == 2) {
 		printf("□%-8s WIN!!! \n",player2.name);
 	} else {
 		printf("□引き分け\n");
-	}
-
-	if (isJudge(player1.score,player2.score) == 2 && player2.score == 21) {
-		player2.chip += bet * 2;
-	} else if ( isJudge(player1.score,player2.score) == 1 ) {
-		player2.chip -= bet;
-	} else if ( isJudge(player1.score,player2.score) == 2 ) {
-		player2.chip += bet;
-	} else {
-		player2.chip -= bet;
-	}
-	printChip(player2,bet,saveChip);
-
-	if ( player2.chip <= 0) {
-		break;
 	}
 
 	printf("□ゲーム続行しますか？ [Y...1 / N...0]"); fflush(0); scanf("%d", &retry);
